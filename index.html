@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Check List Extintores</title>
+<meta name="theme-color" content="#d7141a">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<style>
+/* VOICE: formulario de seguridad en terreno, claro, sin adornos, rápido con guantes
+   IDEA: la etiqueta roja de inspección colgada del extintor, con su número interno grande
+   PICTURE: el propio formulario; cabecera roja con el código SSOMA y barra de avance
+   COLOUR and TYPE: rojo extintor #d7141a, blanco, negro; verde/ámbar solo para estado. Archivo ancho
+   LAYOUT: una columna calma de 640px, botones SI/NO/N.A grandes, barra de avance fija */
+:root{color-scheme:light dark;
+--bg:light-dark(#f4f4f2,#111);--card:light-dark(#fff,#1c1c1c);--ink:light-dark(#141414,#f1f1f1);
+--mute:light-dark(#5d5d5d,#a8a8a8);--line:light-dark(#dcdcd8,#333);--red:#d7141a;--redd:light-dark(#a90f14,#ff5a5f);
+--ok:light-dark(#137a3a,#4ccb7a);--okbg:light-dark(#e5f4ea,#14301f);--bad:light-dark(#b3261e,#ff7a70);--badbg:light-dark(#fde8e6,#3a1714);
+--na:light-dark(#555,#bbb);--nabg:light-dark(#ececea,#2a2a2a)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow-x:clip}
+header{background:var(--red);color:#fff;padding:20px max(5vw,16px) 22px}
+.hw{max-width:640px;margin:auto}
+.code{font-size:13px;opacity:.9;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+h1{font-stretch:112%;font-weight:800;font-size:clamp(30px,7vw,44px);line-height:1.05;margin:10px 0 4px;text-wrap:balance}
+.sub{font-size:15px;opacity:.92;margin:0}
+.bar{position:sticky;top:0;z-index:5;background:var(--card);border-bottom:1px solid var(--line);padding:10px max(5vw,16px)}
+.bw{max-width:640px;margin:auto;display:flex;align-items:center;gap:12px}
+.track{flex:1;height:8px;border-radius:4px;background:var(--nabg);overflow:hidden}
+.fill{height:100%;width:0;background:var(--red);transition:width .25s}
+.cnt{font-size:14px;font-weight:700;white-space:nowrap;font-variant-numeric:tabular-nums}
+.net{justify-content:space-between;font-size:13px;margin-top:4px}.net .lnk{min-height:32px;padding:0}
+.dev{font-size:13px;color:var(--bad);font-weight:700;white-space:nowrap}
+main{max-width:640px;margin:auto;padding:16px max(4vw,12px) 120px}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:18px 16px;margin:0 0 14px}
+h2{font-size:20px;font-stretch:106%;font-weight:800;margin:0 0 12px;line-height:1.2}
+label.f{display:block;font-size:14px;font-weight:600;margin:12px 0 4px}
+label.f:first-of-type{margin-top:0}
+.req::after{content:" *";color:var(--redd)}
+input,select,textarea{width:100%;font:inherit;font-size:16px;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:11px 12px;min-height:46px}
+textarea{min-height:84px;resize:vertical}
+input:focus,select:focus,textarea:focus,button:focus-visible{outline:3px solid color-mix(in srgb,var(--red) 55%,transparent);outline-offset:1px}
+.g2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 12px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-width:52px;min-height:46px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:inherit;font-weight:800;font-size:18px;cursor:pointer}
+.chip[aria-pressed=true]{background:var(--red);border-color:var(--red);color:#fff}
+.item{border-top:1px solid var(--line);padding:14px 0}
+.item:first-of-type{border-top:0;padding-top:4px}
+.q{display:flex;gap:10px;margin-bottom:10px}
+.n{flex:none;width:28px;font-weight:800;color:var(--mute);font-variant-numeric:tabular-nums}
+.inv{display:inline-block;font-size:12px;font-weight:700;color:var(--mute);background:var(--nabg);border-radius:4px;padding:1px 6px;margin-left:4px;white-space:nowrap}
+.opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;padding-left:38px}
+.o{min-height:48px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;font:inherit;font-weight:800;font-size:16px;cursor:pointer}
+.o.sel.good{background:var(--ok);border-color:var(--ok);color:#fff}
+.o.sel.badc{background:var(--bad);border-color:var(--bad);color:#fff}
+.o.sel.nac{background:var(--na);border-color:var(--na);color:var(--card)}
+.item.isdev{background:var(--badbg);margin:0 -16px;padding-inline:16px}
+.fix{display:none;padding-left:38px;margin-top:10px}
+.item.isdev .fix{display:grid}
+.fix .lab{font-size:13px;font-weight:700;color:var(--bad);margin-bottom:6px;grid-column:1/-1}
+.item.miss .n{color:var(--redd)}
+.sig{position:relative;border:1px dashed var(--mute);border-radius:8px;background:var(--bg);height:150px;touch-action:none}
+.sig canvas{position:absolute;inset:0;width:100%;height:100%}
+.sig span{position:absolute;left:12px;bottom:8px;font-size:13px;color:var(--mute);pointer-events:none}
+.lnk{background:none;border:0;color:var(--redd);font:inherit;font-size:14px;font-weight:700;padding:8px 0;cursor:pointer;min-height:40px}
+.foot{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);padding:12px max(5vw,16px)}
+.fw{max-width:640px;margin:auto;display:flex;gap:10px}
+.btn{flex:1;min-height:52px;border-radius:10px;border:0;background:var(--red);color:#fff;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+.btn.sec{flex:none;background:var(--nabg);color:var(--ink);padding:0 18px}
+.err{color:var(--bad);font-size:14px;font-weight:600;margin:8px 0 0}
+.note{font-size:13px;color:var(--mute);margin:8px 0 0}
+dialog{border:0;border-radius:12px;padding:0;max-width:min(560px,94vw);width:100%;background:var(--card);color:var(--ink)}
+dialog::backdrop{background:rgb(0 0 0/.55)}
+.dh{background:var(--red);color:#fff;padding:18px}
+.dh b{font-size:34px;font-stretch:112%;font-weight:800;display:block;line-height:1.05}
+.db{padding:16px 18px}
+.kpi{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0 0 12px}
+.kpi div{background:var(--bg);border-radius:8px;padding:10px;text-align:center}
+.kpi strong{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.kpi small{font-size:13px;color:var(--mute)}
+.dl{margin:0;padding-left:18px;font-size:14px}
+.tag{margin-top:12px;border:2px solid var(--red);border-radius:10px;overflow:hidden}
+.tag .th{background:var(--red);color:#fff;padding:8px 12px;font-weight:800;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tag .th b{font-size:24px;font-stretch:112%;font-variant-numeric:tabular-nums}
+.tag dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 14px;margin:0;padding:10px 12px;font-size:15px}
+.tag dt{color:var(--mute)}.tag dd{margin:0;font-weight:600}
+.st{display:inline-block;border-radius:4px;padding:0 6px;font-size:13px;font-weight:700;white-space:nowrap}
+.st.v{background:var(--okbg);color:var(--ok)}.st.a{background:#fff1cc;color:#7a5200}.st.x{background:var(--badbg);color:var(--bad)}
+@media(max-width:520px){.g2{grid-template-columns:minmax(0,1fr)}.opts,.fix{padding-left:0}}
+@media(prefers-reduced-motion:reduce){.fill{transition:none}}
+</style>
+</head>
+<body>
+<header><div class="hw">
+  <div class="code"><span>SSOMA-E-013-R-001 · Rev. 0</span><span>Estándar extintores portátiles</span></div>
+  <h1>Check list extintores portátiles</h1>
+  <p class="sub">Sistema de Gestión de Seguridad, Salud Ocupacional y Medio Ambiente</p>
+</div></header>
+
+<div class="bar"><div class="bw">
+  <div class="track"><div class="fill" id="fill"></div></div>
+  <span class="cnt" id="cnt">0/23</span><span class="dev" id="devc"></span>
+</div><div class="bw net"><span id="net"></span><button type="button" class="lnk" id="reenviar" hidden>Enviar ahora</button>
+</div></div>
+
+<main>
+<form id="frm" novalidate>
+<section>
+  <h2>Identificación del extintor</h2>
+  <label class="f" for="pick">Extintor del listado</label>
+  <select id="pick"><option value="">Escanea el QR o elige aquí…</option></select>
+  <div class="tag" id="tag" hidden></div>
+  <div class="g2" style="margin-top:12px">
+    <div><label class="f req" for="obra">Obra</label><input id="obra" autocomplete="off"></div>
+    <div><label class="f" for="area">Área</label><input id="area" autocomplete="off"></div>
+  </div>
+  <div class="g2">
+    <div><label class="f req" for="nint">Nº interno extintor</label><input id="nint" inputmode="text" autocomplete="off" placeholder="Ej: EXT-045"></div>
+    <div><label class="f req" for="tipo">Tipo de extintor</label>
+      <select id="tipo"><option value="">Seleccionar…</option><option>PQS (polvo químico seco)</option><option>CO₂</option><option>Agua presurizada</option><option>Espuma (AFFF)</option><option>Acetato de potasio (clase K)</option><option>Otro</option></select></div>
+  </div>
+  <label class="f req">Clase de fuego</label>
+  <div class="chips" id="clases"></div>
+  <label class="f" for="ubic">Área / ubicación del extintor</label>
+  <input id="ubic" autocomplete="off" placeholder="Ej: Sala eléctrica, acceso norte">
+</section>
+
+<section>
+  <h2>Elementos a inspeccionar</h2>
+  <p class="note" style="margin:-6px 0 12px">Las preguntas marcadas «inverso» son desviación si la respuesta es SI. Al marcar una desviación se pide responsable y fecha.</p>
+  <div id="items"></div>
+  <label class="f" for="otros">24. Otros defectos</label>
+  <textarea id="otros" placeholder="Describe cualquier otro defecto observado"></textarea>
+</section>
+
+<section>
+  <h2>Diagnóstico y acciones</h2>
+  <label class="f" for="diag">Diagnóstico definitivo</label>
+  <select id="diag"><option value="">Seleccionar…</option><option>Operativo, sin observaciones</option><option>Requiere reparación</option><option>Requiere reemplazo</option><option>Requiere mantención</option></select>
+  <label class="f" for="medidas">Medidas correctivas a tomar</label>
+  <textarea id="medidas"></textarea>
+  <label class="f" for="presp">Persona responsable</label><input id="presp" autocomplete="off">
+  <div class="g2">
+    <div><label class="f" for="plazo">Plazo</label><input id="plazo" type="date"></div>
+    <div><label class="f" for="fseg">Fecha seguimiento</label><input id="fseg" type="date"></div>
+  </div>
+</section>
+
+<section id="sec-r"></section>
+<section id="sec-v"></section>
+<p class="note" style="text-align:center">N.A: no aplicable</p>
+</form>
+</main>
+
+<div class="foot"><div class="fw">
+  <button class="btn sec" type="button" id="limpiar">Limpiar</button>
+  <button class="btn" type="button" id="enviar">Enviar check list</button>
+</div></div>
+
+<dialog id="dlg">
+  <div class="dh"><span id="dnum">—</span><b id="dtit">Check list listo</b></div>
+  <div class="db" id="dbody"></div>
+  <div class="db" style="padding-top:0;display:flex;gap:10px">
+    <button class="btn sec" type="button" id="dcerrar">Cerrar</button>
+    <button class="btn" type="button" id="dnuevo">Nuevo extintor</button>
+  </div>
+</dialog>
+
+<script>
+{
+const ITEMS=[
+"¿El extintor está clasificado para el vehículo u otra aplicación?",
+"¿Tiene el extintor número de identificación interno?",
+"¿El extintor está ubicado en el lugar adecuado y en posición correcta?",
+"¿El extintor se encuentra claramente visible?",
+"¿El extintor se encuentra señalizado adecuadamente?",
+"¿El soporte del extintor está en buenas condiciones?",
+"¿Se encuentra adecuadamente montado sobre un tablero o al interior de un gabinete de protección?",
+"¿El tablero o gabinete se encuentra pintado con franjas diagonales de colores alternados rojo y blanco?",
+"¿El acceso al extintor se encuentra expedito y libre de obstáculos?",
+"¿Se observan signos o señales de corrosión en el cilindro extintor?",
+"¿Hay evidencias de daños y averías mecánicas? (golpes, abolladuras, corrosión u otros daños)",
+"¿El extintor presenta condiciones de suciedad? (exceso de polvo, manchas de aceite, pintura, etc.)",
+"¿La pintura del extintor está descascarada?",
+"¿Ha sido expuesto a condiciones ambientales que pueden interferir en su funcionamiento? (Tª extremas, humos)",
+"¿El pasador de seguridad de la manija de descarga se encuentra adecuadamente en su lugar?",
+"¿El conjunto manguera y acoples está en buenas condiciones?",
+"¿La boquilla de descarga está en buenas condiciones?",
+"¿La manija de descarga está en buenas condiciones?",
+"¿El mango de transporte está en buenas condiciones?",
+"¿Mantiene visibles y legibles las marcas, etiqueta de identificación y placa de instrucciones? (DS Nº 369)",
+"¿Mantiene visibles y legibles las etiquetas de última revisión del servicio técnico/mantención? (DS Nº 369)",
+"¿El manómetro de presión (indicador de carga) está en buenas condiciones?",
+"¿La aguja del manómetro marca la zona verde? (extintor con carga normal)"];
+const URL_LB="https://script.google.com/macros/s/AKfycbz9sDn5jNTKZxtUqd8smsSvidIm6RibkUa2LmT-bBdztAFzFmsCYS-tub1XTV8lnIxx/exec";
+const OBRA="CC-146 Construcción y Montaje Electromecánico Ventilación Extracción";
+const EXT=[{"sec": "Inyección", "ins": "OFICINA SSOMA", "id": "173575", "tipo": "PQS", "cl": "ABC", "cap": "10 kg", "ub": "INYECCIÓN / OFICINA SSOMA", "man": "2026-03-01", "ven": "2027-03-01"}];
+const TIPOS={PQS:"PQS (polvo químico seco)",CO2:"CO₂"};
+const INV=new Set([10,11,12,13,14]);
+const CLASES=["A","B","C","D","K"];
+const $=id=>document.getElementById(id);
+const hoy=()=>new Date().toISOString().slice(0,10);
+let resp={},fix={},clases=new Set(),sigs={};
+
+$('clases').innerHTML=CLASES.map(c=>`<button type="button" class="chip" aria-pressed="false" data-c="${c}">${c}</button>`).join('');
+$('items').innerHTML=ITEMS.map((t,i)=>{const n=i+1;return `<div class="item" id="it${n}">
+<div class="q"><span class="n">${n}.</span><span>${t}${INV.has(n)?'<span class="inv">inverso</span>':''}</span></div>
+<div class="opts">${['SI','NO','NA'].map(v=>`<button type="button" class="o" data-n="${n}" data-v="${v}">${v==='NA'?'N.A':v}</button>`).join('')}</div>
+<div class="fix g2"><div class="lab">Desviación: indicar responsable de ejecución y fecha</div>
+<div><label class="f" for="fr${n}">Responsable ejecución</label><input id="fr${n}" data-fx="${n}" data-k="r" autocomplete="off"></div>
+<div><label class="f" for="ff${n}">Fecha</label><input id="ff${n}" type="date" data-fx="${n}" data-k="f"></div></div></div>`}).join('');
+
+const firma=(k,t)=>`<h2>${t}</h2>
+<div class="g2"><div><label class="f${k==='r'?' req':''}" for="${k}nom">Nombre</label><input id="${k}nom" autocomplete="name"></div>
+<div><label class="f" for="${k}car">Cargo</label><input id="${k}car" autocomplete="organization-title"></div></div>
+<label class="f${k==='r'?' req':''}">Firma</label><div class="sig"><canvas id="${k}sig"></canvas><span>Firma aquí con el dedo</span></div>
+<button type="button" class="lnk" data-clr="${k}">Borrar firma</button>
+<label class="f" for="${k}fec">Fecha</label><input id="${k}fec" type="date">`;
+$('sec-r').innerHTML=firma('r','Realizó');$('sec-v').innerHTML=firma('v','Revisó');
+$('rfec').value=hoy();
+
+const isDev=n=>{const v=resp[n];return INV.has(n)?v==='SI':v==='NO'};
+function paintItem(n){
+  const el=$('it'+n),v=resp[n];
+  el.querySelectorAll('.o').forEach(b=>{const s=b.dataset.v===v;b.classList.toggle('sel',s);b.setAttribute('aria-pressed',s);
+    b.classList.remove('good','badc','nac');if(s){b.classList.add(v==='NA'?'nac':isDev(n)?'badc':'good')}});
+  el.classList.toggle('isdev',isDev(n));el.classList.remove('miss');
+}
+function progress(){
+  const a=Object.keys(resp).length,d=ITEMS.filter((_,i)=>isDev(i+1)).length;
+  $('fill').style.width=(a/ITEMS.length*100)+'%';$('cnt').textContent=a+'/'+ITEMS.length;
+  $('devc').textContent=d?d+(d>1?' desviaciones':' desviación'):'';
+}
+$('items').addEventListener('click',e=>{const b=e.target.closest('.o');if(!b)return;const n=+b.dataset.n;
+  resp[n]=resp[n]===b.dataset.v?undefined:b.dataset.v;if(!resp[n])delete resp[n];paintItem(n);progress();save()});
+$('items').addEventListener('input',e=>{const x=e.target.dataset.fx;if(!x)return;(fix[x]??={})[e.target.dataset.k]=e.target.value;save()});
+$('clases').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;const c=b.dataset.c;
+  clases.has(c)?clases.delete(c):clases.add(c);b.setAttribute('aria-pressed',clases.has(c));save()});
+
+function pad(k){
+  const c=$(k+'sig'),x=c.getContext('2d');let drawing=false,dirty=false;
+  const fit=()=>{const r=c.getBoundingClientRect(),d=devicePixelRatio||1,img=dirty?c.toDataURL():null;
+    c.width=r.width*d;c.height=r.height*d;x.scale(d,d);x.lineWidth=2.4;x.lineCap='round';x.lineJoin='round';
+    x.strokeStyle=getComputedStyle(document.body).color;
+    if(img){const i=new Image();i.onload=()=>x.drawImage(i,0,0,r.width,r.height);i.src=img}};
+  const pt=e=>{const r=c.getBoundingClientRect();return[e.clientX-r.left,e.clientY-r.top]};
+  c.addEventListener('pointerdown',e=>{drawing=true;c.setPointerCapture(e.pointerId);x.beginPath();x.moveTo(...pt(e))});
+  c.addEventListener('pointermove',e=>{if(!drawing)return;x.lineTo(...pt(e));x.stroke();dirty=true;c.nextElementSibling.style.display='none'});
+  c.addEventListener('pointerup',()=>{drawing=false});
+  new ResizeObserver(fit).observe(c);
+  sigs[k]={empty:()=>!dirty,clear:()=>{x.clearRect(0,0,c.width,c.height);dirty=false;c.nextElementSibling.style.display=''},data:()=>dirty?c.toDataURL('image/png'):''};
+}
+pad('r');pad('v');
+document.addEventListener('click',e=>{const k=e.target.dataset?.clr;if(k)sigs[k].clear()});
+
+const FIELDS=['obra','area','nint','tipo','ubic','otros','diag','medidas','presp','plazo','fseg','rnom','rcar','rfec','vnom','vcar','vfec'];
+function save(){try{localStorage.setItem('ckext',JSON.stringify({f:Object.fromEntries(FIELDS.map(k=>[k,$(k).value])),resp,fix,clases:[...clases]}))}catch(_){}}
+function load(){try{const s=JSON.parse(localStorage.getItem('ckext')||'null');if(!s)return;
+  FIELDS.forEach(k=>{if(s.f[k]!=null)$(k).value=s.f[k]});resp=s.resp||{};fix=s.fix||{};clases=new Set(s.clases||[]);
+  Object.entries(fix).forEach(([n,o])=>{if(o.r)$('fr'+n).value=o.r;if(o.f)$('ff'+n).value=o.f});
+  document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',clases.has(b.dataset.c)));
+  ITEMS.forEach((_,i)=>paintItem(i+1));progress()}catch(_){}}
+FIELDS.forEach(k=>$(k).addEventListener('input',save));
+load();
+
+function clearAll(keepObra,quiet){
+  const keep={obra:$('obra').value,area:$('area').value,rnom:$('rnom').value,rcar:$('rcar').value};
+  $('frm').reset();resp={};fix={};clases.clear();
+  document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed','false'));
+  document.querySelectorAll('.err').forEach(e=>e.remove());
+  ITEMS.forEach((_,i)=>paintItem(i+1));sigs.r.clear();sigs.v.clear();
+  if(keepObra)Object.entries(keep).forEach(([k,v])=>$(k).value=v);
+  $('rfec').value=hoy();progress();save();if(!quiet){$('pick').value='';showTag(null);scrollTo({top:0})}
+}
+$('limpiar').addEventListener('click',()=>clearAll(false));
+$('pick').innerHTML+=EXT.map(e=>`<option value="${e.id}">${e.id} · ${e.ins} (${e.sec})</option>`).join('');
+const dias=d=>Math.round((new Date(d+'T12:00')-new Date())/864e5);
+const fdate=d=>d.split('-').reverse().join('-');
+function showTag(e){
+  const t=$('tag');if(!e){t.hidden=true;return}
+  const r=dias(e.ven),st=r<0?['x','Vencida']:r<=30?['a','Vence en '+r+' días']:['v','Vigente · '+r+' días'];
+  t.innerHTML=`<div class="th"><span>Nº interno</span><b>${e.id}</b></div><dl>
+  <dt>Instalación</dt><dd>${e.ins}</dd><dt>Sector</dt><dd>${e.sec}</dd>
+  <dt>Tipo</dt><dd>${e.tipo} · clase ${e.cl} · ${e.cap}</dd>
+  <dt>Últ. mantención</dt><dd>${fdate(e.man)}</dd>
+  <dt>Vencimiento</dt><dd>${fdate(e.ven)} <span class="st ${st[0]}">${st[1]}</span></dd></dl>`;t.hidden=false}
+function applyExt(id,fromScan){
+  const e=EXT.find(x=>x.id===id);$('pick').value=e?id:'';showTag(e);if(!e)return;
+  if(fromScan&&$('nint').value&&$('nint').value!==id)clearAll(true,true);
+  $('obra').value=OBRA;$('area').value=e.sec;$('nint').value=e.id;$('tipo').value=TIPOS[e.tipo]||'Otro';$('ubic').value=e.ub;
+  clases=new Set(e.cl.split(''));document.querySelectorAll('.chip').forEach(b=>b.setAttribute('aria-pressed',clases.has(b.dataset.c)));save();
+}
+$('pick').addEventListener('change',e=>applyExt(e.target.value,true));
+const fromHash=()=>{const m=location.hash.match(/^#ext-([A-Za-z0-9]+)$/);if(m)applyExt(m[1],true)};
+addEventListener('hashchange',fromHash);fromHash();
+if(!location.hash)applyExt($('nint').value,false);
+
+
+function err(el,msg){const p=document.createElement('p');p.className='err';p.textContent=msg;el.after(p)}
+$('enviar').addEventListener('click',()=>{
+  document.querySelectorAll('.err').forEach(e=>e.remove());
+  let first=null;const mark=(el,msg)=>{err(el,msg);first??=el};
+  if(!$('obra').value.trim())mark($('obra'),'Indica la obra.');
+  if(!$('nint').value.trim())mark($('nint'),'Indica el Nº interno.');
+  if(!$('tipo').value)mark($('tipo'),'Selecciona el tipo.');
+  if(!clases.size)mark($('clases'),'Selecciona al menos una clase de fuego.');
+  const falt=ITEMS.map((_,i)=>i+1).filter(n=>!resp[n]);
+  falt.forEach(n=>$('it'+n).classList.add('miss'));
+  if(falt.length){const el=$('it'+falt[0]);err(el.querySelector('.opts'),`Faltan ${falt.length} ítems por responder (marcados en rojo).`);first??=el}
+  ITEMS.forEach((_,i)=>{const n=i+1;if(isDev(n)&&!(fix[n]?.r&&fix[n]?.f)){const el=$('it'+n);err(el.querySelector('.fix'),'Falta responsable o fecha de la desviación.');first??=el}});
+  if(!$('rnom').value.trim())mark($('rnom'),'Indica quién realizó la inspección.');
+  if(sigs.r.empty())mark($('rsig').parentElement,'Falta la firma de quien realizó.');
+  if(first){first.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'center'});return}
+
+  const vals=Object.values(resp),dev=ITEMS.map((_,i)=>i+1).filter(isDev);
+  $('dnum').textContent='Extintor '+$('nint').value.trim()+' · '+$('tipo').value;
+  $('dtit').textContent=dev.length?'Con desviaciones':'Conforme';
+  $('dbody').innerHTML=`<div class="kpi"><div><strong>${ITEMS.length-dev.length-vals.filter(v=>v==='NA').length}</strong><small>Conformes</small></div>
+  <div><strong style="color:var(--bad)">${dev.length}</strong><small>Desviaciones</small></div>
+  <div><strong>${vals.filter(v=>v==='NA').length}</strong><small>N.A</small></div></div>
+  ${dev.length?'<ol class="dl">'+dev.map(n=>`<li value="${n}">${ITEMS[n-1]} <br><small>${fix[n].r} · ${fix[n].f}</small></li>`).join('')+'</ol>':''}
+  <p class="note" id="dest">Guardando…</p>`;
+  $('dlg').showModal();
+  encolar();
+
+});
+
+const COLA='ckext_cola';
+const getCola=()=>{try{return JSON.parse(localStorage.getItem(COLA)||'[]')}catch(_){return []}};
+const setCola=c=>{try{localStorage.setItem(COLA,JSON.stringify(c))}catch(_){}};
+function payload(){
+  const o=Object.fromEntries(FIELDS.map(k=>[k,$(k).value]));
+  o.id=Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+  o.clase=[...clases].join('');o.resp=resp;o.fix=fix;o.rsig=sigs.r.data();o.vsig=sigs.v.data();o.enviado=new Date().toISOString();
+  return o;
+}
+function estado(){
+  const n=getCola().length,on=navigator.onLine;
+  $('net').textContent=(on?'● Con señal':'○ Sin señal')+(n?' · '+n+' check list pendiente'+(n>1?'s':'')+' de envío':' · todo enviado');
+  $('net').style.color=n?'var(--bad)':'var(--ok)';$('reenviar').hidden=!n||!on;
+}
+let enviando=false;
+async function vaciar(){
+  if(enviando)return;enviando=true;
+  try{let c=getCola();
+    while(c.length){
+      try{await fetch(URL_LB,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(c[0])})}catch(_){break}
+      c=getCola();c.shift();setCola(c);
+    }}finally{enviando=false;estado()}
+  return getCola().length===0;
+}
+async function encolar(){
+  const c=getCola();c.push(payload());setCola(c);estado();
+  const ok=navigator.onLine&&await vaciar();
+  const d=$('dest');if(d)d.innerHTML=ok?'<b style="color:var(--ok)">✓ Enviado a la línea base.</b>':'<b style="color:var(--bad)">Guardado en el celular.</b> Se enviará solo cuando vuelva la señal.';
+}
+addEventListener('online',()=>{estado();vaciar()});addEventListener('offline',estado);
+$('reenviar').addEventListener('click',vaciar);
+estado();if(navigator.onLine)vaciar();
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+$('dcerrar').addEventListener('click',()=>{$('dlg').close();clearAll(true);fromHash()});
+$('dnuevo').addEventListener('click',()=>{$('dlg').close();clearAll(true);fromHash()});
+}
+</script>
+</body>
+</html>
